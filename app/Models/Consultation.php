@@ -3,12 +3,17 @@
 namespace App\Models;
 
 use App\Enums\ConsultationStatus;
+use Database\Factories\ConsultationFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Consultation extends Model
 {
+    /** @use HasFactory<ConsultationFactory> */
+    use HasFactory;
+
     protected $guarded = ['id'];
 
     protected function casts(): array
@@ -17,6 +22,21 @@ class Consultation extends Model
             'consulted_at' => 'datetime',
             'status' => ConsultationStatus::class,
         ];
+    }
+
+    public function currentStatus(): ConsultationStatus
+    {
+        return ConsultationStatus::from((string) $this->getRawOriginal('status'));
+    }
+
+    public function isOpen(): bool
+    {
+        return $this->currentStatus() === ConsultationStatus::Abierta;
+    }
+
+    public function isClosed(): bool
+    {
+        return $this->currentStatus() === ConsultationStatus::Cerrada;
     }
 
     /**

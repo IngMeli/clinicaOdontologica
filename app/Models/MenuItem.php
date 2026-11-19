@@ -2,13 +2,18 @@
 
 namespace App\Models;
 
+use Database\Factories\MenuItemFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MenuItem extends Model
 {
+    /** @use HasFactory<MenuItemFactory> */
+    use HasFactory;
+
     protected $guarded = ['id'];
 
     protected function casts(): array

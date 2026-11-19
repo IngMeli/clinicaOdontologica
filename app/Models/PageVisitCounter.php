@@ -2,10 +2,15 @@
 
 namespace App\Models;
 
+use Database\Factories\PageVisitCounterFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class PageVisitCounter extends Model
 {
+    /** @use HasFactory<PageVisitCounterFactory> */
+    use HasFactory;
+
     protected $primaryKey = 'path';
 
     public $incrementing = false;

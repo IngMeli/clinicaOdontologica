@@ -4,11 +4,16 @@ namespace App\Models;
 
 use App\Enums\ThemeMode;
 use App\Enums\ThemeSegment;
+use Database\Factories\UserPreferenceFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserPreference extends Model
 {
+    /** @use HasFactory<UserPreferenceFactory> */
+    use HasFactory;
+
     protected $guarded = ['id'];
 
     protected function casts(): array

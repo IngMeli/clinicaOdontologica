@@ -9,4 +9,15 @@ enum PaymentType: string
     case Consulta = 'consulta';
     case Cuota = 'cuota';
     case Otro = 'otro';
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Tratamiento => 'Tratamiento',
+            self::Farmacia => 'Farmacia',
+            self::Consulta => 'Consulta',
+            self::Cuota => 'Cuota',
+            self::Otro => 'Otro',
+        };
+    }
 }

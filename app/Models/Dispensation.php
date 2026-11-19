@@ -2,12 +2,17 @@
 
 namespace App\Models;
 
+use Database\Factories\DispensationFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Dispensation extends Model
 {
+    /** @use HasFactory<DispensationFactory> */
+    use HasFactory;
+
     protected $guarded = ['id'];
 
     protected function casts(): array

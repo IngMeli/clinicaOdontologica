@@ -37,6 +37,10 @@ class MenuService
         $result = [];
 
         foreach ($items as $item) {
+            if ($this->isPortalItem($item) && ! $user->isPatient()) {
+                continue;
+            }
+
             if ($item->permission_name && ! $user->can($item->permission_name)) {
                 continue;
             }
@@ -59,6 +63,12 @@ class MenuService
         }
 
         return $result;
+    }
+
+    private function isPortalItem(MenuItem $item): bool
+    {
+        return str_starts_with((string) $item->permission_name, 'portal.')
+            || str_starts_with((string) $item->route_name, 'patient.');
     }
 
     private function resolveUrl(MenuItem $item): ?string

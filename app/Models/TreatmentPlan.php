@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\TreatmentPlanStatus;
+use Database\Factories\TreatmentPlanFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,6 +12,9 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class TreatmentPlan extends Model
 {
+    /** @use HasFactory<TreatmentPlanFactory> */
+    use HasFactory;
+
     protected $guarded = ['id'];
 
     protected function casts(): array
@@ -20,6 +25,21 @@ class TreatmentPlan extends Model
             'total' => 'decimal:2',
             'status' => TreatmentPlanStatus::class,
         ];
+    }
+
+    public function currentStatus(): TreatmentPlanStatus
+    {
+        return TreatmentPlanStatus::from((string) $this->getRawOriginal('status'));
+    }
+
+    public function isDraft(): bool
+    {
+        return $this->currentStatus() === TreatmentPlanStatus::Borrador;
+    }
+
+    public function isCanceled(): bool
+    {
+        return $this->currentStatus() === TreatmentPlanStatus::Cancelado;
     }
 
     /**

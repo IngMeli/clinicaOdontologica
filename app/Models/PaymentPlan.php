@@ -3,13 +3,28 @@
 namespace App\Models;
 
 use App\Enums\PaymentPlanStatus;
+use Database\Factories\PaymentPlanFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PaymentPlan extends Model
 {
+    /** @use HasFactory<PaymentPlanFactory> */
+    use HasFactory;
+
     protected $guarded = ['id'];
+
+    public function currentStatus(): PaymentPlanStatus
+    {
+        return PaymentPlanStatus::from((string) $this->getRawOriginal('status'));
+    }
+
+    public function isCanceled(): bool
+    {
+        return $this->currentStatus() === PaymentPlanStatus::Cancelado;
+    }
 
     protected function casts(): array
     {

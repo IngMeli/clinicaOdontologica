@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Database\Factories\PharmacySaleFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +11,9 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class PharmacySale extends Model
 {
+    /** @use HasFactory<PharmacySaleFactory> */
+    use HasFactory;
+
     protected $guarded = ['id'];
 
     protected function casts(): array

@@ -3,11 +3,16 @@
 namespace App\Models;
 
 use App\Enums\TreatmentItemStatus;
+use Database\Factories\TreatmentPlanItemFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TreatmentPlanItem extends Model
 {
+    /** @use HasFactory<TreatmentPlanItemFactory> */
+    use HasFactory;
+
     protected $guarded = ['id'];
 
     protected function casts(): array
@@ -17,6 +22,11 @@ class TreatmentPlanItem extends Model
             'subtotal' => 'decimal:2',
             'status' => TreatmentItemStatus::class,
         ];
+    }
+
+    public function currentStatus(): TreatmentItemStatus
+    {
+        return TreatmentItemStatus::from((string) $this->getRawOriginal('status'));
     }
 
     /**

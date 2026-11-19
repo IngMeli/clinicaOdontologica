@@ -5,8 +5,11 @@ namespace Tests\Feature\Clinic;
 use App\Enums\AppointmentStatus;
 use App\Enums\RoleName;
 use App\Models\Appointment;
+use App\Models\Consultation;
 use App\Models\Doctor;
 use App\Models\Patient;
+use App\Models\Prescription;
+use App\Models\TreatmentPlan;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -49,8 +52,9 @@ class TransversalPagesTest extends TestCase
             ->get(route('patients.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('modules/placeholder')
-                ->where('title', 'Pacientes'));
+                ->component('patients/index')
+                ->has('patients')
+                ->has('filters'));
     }
 
     public function test_dashboard_renders_appointment_status_labels(): void
@@ -162,6 +166,40 @@ class TransversalPagesTest extends TestCase
             'font_scale' => 120,
             'high_contrast' => true,
         ]);
+    }
+
+    public function test_global_search_finds_clinical_records_by_patient(): void
+    {
+        $admin = $this->userWithRole(RoleName::Administrador);
+        $patient = Patient::create([
+            'code' => 'PAC-CLIN',
+            'first_name' => 'Ximena',
+            'last_name' => 'Rojas',
+            'ci' => '99887766',
+            'active' => true,
+        ]);
+        $doctor = Doctor::factory()->create();
+
+        Consultation::factory()->create([
+            'patient_id' => $patient->id,
+            'doctor_id' => $doctor->id,
+        ]);
+        TreatmentPlan::factory()->create([
+            'patient_id' => $patient->id,
+            'doctor_id' => $doctor->id,
+        ]);
+        Prescription::factory()->create([
+            'patient_id' => $patient->id,
+            'doctor_id' => $doctor->id,
+        ]);
+
+        Sanctum::actingAs($admin);
+
+        $this->getJson('/api/v1/search?q=Ximena')
+            ->assertOk()
+            ->assertJsonFragment(['group' => 'Consultas'])
+            ->assertJsonFragment(['group' => 'Planes de tratamiento'])
+            ->assertJsonFragment(['group' => 'Recetas']);
     }
 
     public function test_home_page_and_visit_counter_are_registered(): void

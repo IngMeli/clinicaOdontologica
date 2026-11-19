@@ -2,13 +2,16 @@
 
 namespace App\Services;
 
+use App\Models\Consultation;
 use App\Models\Patient;
 use App\Models\Payment;
+use App\Models\Prescription;
 use App\Models\Product;
 use App\Models\Treatment;
 use App\Models\TreatmentPlan;
 use App\Models\User;
 use App\Support\Permissions;
+use Carbon\CarbonImmutable;
 
 class SearchService
 {
@@ -39,8 +42,30 @@ class SearchService
                     'group' => 'Pacientes',
                     'label' => $patient->full_name,
                     'subtitle' => trim(($patient->ci ? 'CI '.$patient->ci : '').' · '.$patient->code),
-                    'url' => route('patients.index'),
+                    'url' => route('patients.show', $patient),
                     'icon' => 'users',
+                ];
+            }
+        }
+
+        if ($user->can(Permissions::CONSULTATIONS_VIEW)) {
+            foreach (Consultation::query()
+                ->with('patient')
+                ->where(fn ($query) => $query
+                    ->where('code', 'ilike', $like)
+                    ->orWhere('reason', 'ilike', $like)
+                    ->orWhere('diagnosis', 'ilike', $like)
+                    ->orWhereHas('patient', fn ($patient) => $patient
+                        ->where('first_name', 'ilike', $like)
+                        ->orWhere('last_name', 'ilike', $like)))
+                ->limit(5)
+                ->get() as $consultation) {
+                $results[] = [
+                    'group' => 'Consultas',
+                    'label' => $consultation->code.' · '.($consultation->patient->full_name ?? 'Sin paciente'),
+                    'subtitle' => 'Consulta del '.CarbonImmutable::parse((string) $consultation->getRawOriginal('consulted_at'))->format('d/m/Y'),
+                    'url' => route('consultations.show', $consultation),
+                    'icon' => 'clipboard-plus',
                 ];
             }
         }
@@ -77,8 +102,29 @@ class SearchService
                     'group' => 'Planes de tratamiento',
                     'label' => $plan->code.' · '.($plan->patient->full_name ?? 'Sin paciente'),
                     'subtitle' => 'Total Bs. '.number_format((float) $plan->total, 2),
-                    'url' => route('treatment-plans.index'),
+                    'url' => route('treatment-plans.show', $plan),
                     'icon' => 'clipboard-list',
+                ];
+            }
+        }
+
+        if ($user->can(Permissions::PRESCRIPTIONS_VIEW)) {
+            foreach (Prescription::query()
+                ->with('patient')
+                ->where(fn ($query) => $query
+                    ->where('code', 'ilike', $like)
+                    ->orWhereHas('patient', fn ($patient) => $patient
+                        ->where('first_name', 'ilike', $like)
+                        ->orWhere('last_name', 'ilike', $like))
+                    ->orWhereHas('items', fn ($items) => $items->where('medication', 'ilike', $like)))
+                ->limit(5)
+                ->get() as $prescription) {
+                $results[] = [
+                    'group' => 'Recetas',
+                    'label' => $prescription->code.' · '.($prescription->patient->full_name ?? 'Sin paciente'),
+                    'subtitle' => 'Emitida el '.CarbonImmutable::parse((string) $prescription->getRawOriginal('issued_at'))->format('d/m/Y'),
+                    'url' => route('prescriptions.show', $prescription),
+                    'icon' => 'pill',
                 ];
             }
         }

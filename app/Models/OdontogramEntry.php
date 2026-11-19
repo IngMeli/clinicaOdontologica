@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\OdontogramEntryFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OdontogramEntry extends Model
 {
+    /** @use HasFactory<OdontogramEntryFactory> */
+    use HasFactory;
+
     protected $guarded = ['id'];
 
     protected function casts(): array

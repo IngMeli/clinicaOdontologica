@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\SpecialtyFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Specialty extends Model
 {
+    /** @use HasFactory<SpecialtyFactory> */
+    use HasFactory;
+
     protected $guarded = ['id'];
 
     protected function casts(): array
