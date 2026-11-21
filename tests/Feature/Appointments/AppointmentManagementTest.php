@@ -68,6 +68,30 @@ class AppointmentManagementTest extends TestCase
                 ->where('can.create', true));
     }
 
+    public function test_appointments_can_be_registered_for_past_dates_and_times(): void
+    {
+        $secretary = $this->userWithRole(RoleName::Secretaria);
+        $patient = Patient::factory()->create();
+        $doctor = Doctor::factory()->create();
+        $scheduledAt = CarbonImmutable::now()->subDay()->setTime(9, 0);
+
+        $this->actingAs($secretary)
+            ->post(route('appointments.store'), [
+                'patient_id' => $patient->id,
+                'doctor_id' => $doctor->id,
+                'scheduled_at' => $scheduledAt->format('Y-m-d H:i:s'),
+                'duration_minutes' => 30,
+                'reason' => 'Registro de cita pasada',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('appointments', [
+            'patient_id' => $patient->id,
+            'doctor_id' => $doctor->id,
+            'scheduled_at' => $scheduledAt->format('Y-m-d H:i:s'),
+        ]);
+    }
+
     public function test_overlapping_appointments_for_the_same_doctor_are_rejected(): void
     {
         $secretary = $this->userWithRole(RoleName::Secretaria);

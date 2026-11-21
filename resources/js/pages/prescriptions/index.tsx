@@ -57,8 +57,7 @@ export default function PrescriptionsIndex({
 
                 {!can.create && (
                     <div className="rounded-lg border border-dashed bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-                        No tienes permiso para emitir recetas. Solo un doctor
-                        puede hacerlo.
+                        No tienes permiso para emitir recetas.
                     </div>
                 )}
 

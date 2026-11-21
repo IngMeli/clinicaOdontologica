@@ -33,7 +33,7 @@ class StoreOdontogramEntryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tooth' => ['required', 'integer', Rule::in(Teeth::permanent())],
+            'tooth' => ['required', 'integer', Rule::in(Teeth::all())],
             'surface' => ['nullable', Rule::enum(ToothSurface::class)],
             'condition' => ['required', Rule::enum(OdontogramCondition::class)],
             'notes' => ['nullable', 'string', 'max:2000'],

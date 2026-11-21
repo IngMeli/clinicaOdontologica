@@ -20,7 +20,7 @@ class PrescriptionPolicy
 
     public function create(User $user): bool
     {
-        return $user->can(Permissions::PRESCRIPTIONS_CREATE);
+        return $user->canIssuePrescriptions();
     }
 
     private function canAccessDoctorRecord(User $user, Prescription $prescription): bool

@@ -9,7 +9,6 @@ use App\Http\Requests\Odontogram\StoreOdontogramEntryRequest;
 use App\Models\Consultation;
 use App\Models\Doctor;
 use App\Models\OdontogramEntry;
-use App\Models\Prescription;
 use App\Models\TreatmentPlan;
 use App\Models\User;
 use App\Services\AuditLogger;
@@ -99,7 +98,7 @@ class ConsultationController extends Controller
         ]);
     }
 
-    public function show(Consultation $consultation): Response
+    public function show(Request $request, Consultation $consultation): Response
     {
         Gate::authorize('view', $consultation);
 
@@ -139,6 +138,7 @@ class ConsultationController extends Controller
                 fn (OdontogramCondition $condition): array => [
                     'value' => $condition->value,
                     'label' => $condition->label(),
+                    'code' => $condition->code(),
                 ],
                 OdontogramCondition::cases(),
             ),
@@ -151,7 +151,7 @@ class ConsultationController extends Controller
                     && Gate::allows(Permissions::ODONTOGRAM_MANAGE)
                     && Gate::allows('update', $consultation),
                 'create_treatment_plan' => Gate::allows('create', TreatmentPlan::class),
-                'create_prescription' => Gate::allows('create', Prescription::class),
+                'create_prescription' => $request->user()?->canIssuePrescriptions() ?? false,
             ],
         ]);
     }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\RoleName;
+use App\Support\Permissions;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -116,5 +117,11 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function isPatient(): bool
     {
         return $this->hasRole(RoleName::Paciente->value);
+    }
+
+    public function canIssuePrescriptions(): bool
+    {
+        return ! $this->hasRole(RoleName::Administrador->value)
+            && $this->can(Permissions::PRESCRIPTIONS_CREATE);
     }
 }

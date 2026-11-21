@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Enums\PaymentMethodType;
 use App\Enums\PaymentStatus;
 use App\Enums\PaymentType;
 use App\Models\Patient;
 use App\Models\Payment;
+use App\Models\PaymentMethod;
 use App\Models\PharmacySale;
 use App\Models\Receipt;
 use App\Models\User;
@@ -32,22 +34,45 @@ class PaymentService
                 : PaymentType::from((string) $type);
             $patientId = isset($data['patient_id']) ? (int) $data['patient_id'] : null;
             $patient = $patientId !== null ? Patient::query()->find($patientId) : null;
+            $method = $this->resolveMethod($data, $patient?->user_id, $actor);
+            $reference = $data['reference'] ?? $this->documents->next(Payment::class, 'reference', 'PAY');
+            $isQr = $method?->type === PaymentMethodType::Qr;
+            $gateway = $data['gateway'] ?? null;
+            $gatewayReference = $data['gateway_reference'] ?? null;
+            $gatewayResponse = $data['gateway_response'] ?? null;
+            $qrPayload = $data['qr_payload'] ?? null;
+
+            if ($isQr) {
+                $gateway ??= 'qr_simple';
+                $gatewayReference ??= 'QR-'.$reference;
+                $gatewayResponse ??= [
+                    'provider' => 'QR Simple',
+                    'status' => $status->value,
+                ];
+                $qrPayload ??= json_encode([
+                    'provider' => 'QR Simple',
+                    'reference' => $reference,
+                    'amount' => (float) $data['amount'],
+                    'currency' => $data['currency'] ?? 'BOB',
+                    'patient_id' => $patientId,
+                ], JSON_THROW_ON_ERROR);
+            }
 
             $payment = Payment::query()->create([
                 'user_id' => $data['user_id'] ?? $patient?->user_id,
                 'patient_id' => $patientId,
-                'payment_method_id' => $data['payment_method_id'] ?? null,
+                'payment_method_id' => $method?->id,
                 'payable_type' => $payable?->getMorphClass(),
                 'payable_id' => $payable?->getKey(),
                 'type' => $type,
                 'amount' => $data['amount'],
                 'currency' => $data['currency'] ?? 'BOB',
                 'status' => $status,
-                'reference' => $data['reference'] ?? $this->documents->next(Payment::class, 'reference', 'PAY'),
-                'gateway' => $data['gateway'] ?? null,
-                'gateway_reference' => $data['gateway_reference'] ?? null,
-                'gateway_response' => $data['gateway_response'] ?? null,
-                'qr_payload' => $data['qr_payload'] ?? null,
+                'reference' => $reference,
+                'gateway' => $gateway,
+                'gateway_reference' => $gatewayReference,
+                'gateway_response' => $gatewayResponse,
+                'qr_payload' => $qrPayload,
                 'paid_at' => $status === PaymentStatus::Pagado
                     ? ($data['paid_at'] ?? now())
                     : null,
@@ -60,6 +85,36 @@ class PaymentService
 
             return $payment;
         });
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function resolveMethod(array $data, ?int $patientUserId, User $actor): ?PaymentMethod
+    {
+        $methodId = $data['payment_method_id'] ?? null;
+
+        if (is_numeric($methodId)) {
+            return PaymentMethod::query()->find((int) $methodId);
+        }
+
+        $type = $data['payment_method_type'] ?? null;
+
+        if (! is_string($type) || $type === '') {
+            return null;
+        }
+
+        $methodType = PaymentMethodType::from($type);
+        $ownerId = $patientUserId ?? $actor->id;
+
+        return PaymentMethod::query()->firstOrCreate(
+            ['user_id' => $ownerId, 'type' => $methodType->value],
+            [
+                'provider' => 'Sistema',
+                'alias' => $methodType->label(),
+                'status' => 'activo',
+            ],
+        );
     }
 
     public function issueReceipt(Payment $payment, ?PharmacySale $sale = null): Receipt

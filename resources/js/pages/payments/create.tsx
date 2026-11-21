@@ -14,17 +14,32 @@ type Props = {
     patients: PatientRef[];
     types: Option[];
     statuses: Option[];
+    paymentMethodTypes: Option[];
 };
 
-export default function PaymentCreate({ patients, types, statuses }: Props) {
+export default function PaymentCreate({
+    patients,
+    types,
+    statuses,
+    paymentMethodTypes,
+}: Props) {
     const form = useForm<PaymentFormData>({
         patient_id: '',
+        payment_method_type: 'efectivo',
         type: 'tratamiento',
         amount: '',
         status: 'pagado',
         paid_at: toDateTimeLocal(new Date().toISOString()),
         reference: '',
     });
+
+    const changeMethod = (value: string) => {
+        form.setData('payment_method_type', value);
+
+        if (value === 'qr') {
+            form.setData('status', 'pendiente');
+        }
+    };
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -78,6 +93,31 @@ export default function PaymentCreate({ patients, types, statuses }: Props) {
                                 {form.errors.patient_id && (
                                     <p className="text-xs text-destructive">
                                         {form.errors.patient_id}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="payment_method_type">
+                                    Método de pago
+                                </Label>
+                                <EntitySelect
+                                    id="payment_method_type"
+                                    value={form.data.payment_method_type}
+                                    onChange={(event) =>
+                                        changeMethod(event.target.value)
+                                    }
+                                    options={paymentMethodTypes}
+                                />
+                                {form.errors.payment_method_type && (
+                                    <p className="text-xs text-destructive">
+                                        {form.errors.payment_method_type}
+                                    </p>
+                                )}
+                                {form.data.payment_method_type === 'qr' && (
+                                    <p className="text-xs text-muted-foreground">
+                                        El QR se generará al registrar el pago y
+                                        quedará pendiente de confirmación.
                                     </p>
                                 )}
                             </div>

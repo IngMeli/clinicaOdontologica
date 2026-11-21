@@ -8,7 +8,6 @@ use App\Http\Requests\Patients\StorePatientRequest;
 use App\Http\Requests\Patients\UpdatePatientRequest;
 use App\Models\Appointment;
 use App\Models\Patient;
-use App\Models\Prescription;
 use App\Models\TreatmentPlan;
 use App\Services\AuditLogger;
 use App\Services\DocumentNumberService;
@@ -171,7 +170,7 @@ class PatientController extends Controller
                 'create_appointment' => Gate::allows('create', Appointment::class),
                 'view_odontogram' => $canViewOdontogram,
                 'create_treatment_plan' => Gate::allows('create', TreatmentPlan::class),
-                'create_prescription' => Gate::allows('create', Prescription::class),
+                'create_prescription' => $request->user()?->canIssuePrescriptions() ?? false,
             ],
         ]);
     }

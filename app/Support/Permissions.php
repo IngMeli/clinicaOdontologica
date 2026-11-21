@@ -125,7 +125,10 @@ final class Permissions
     public static function forRole(RoleName $role): array
     {
         return match ($role) {
-            RoleName::Administrador, RoleName::Encargado => self::all(),
+            RoleName::Administrador => array_values(array_diff(self::all(), [
+                self::PRESCRIPTIONS_CREATE,
+            ])),
+            RoleName::Encargado => self::all(),
             RoleName::Doctor => [
                 self::DASHBOARD_VIEW,
                 self::PATIENTS_VIEW, self::PATIENTS_UPDATE,

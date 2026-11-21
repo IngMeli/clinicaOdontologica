@@ -137,6 +137,29 @@ class ConsultationManagementTest extends TestCase
             ->assertSessionHasErrors('consultation');
     }
 
+    public function test_primary_teeth_and_extended_conditions_can_be_recorded(): void
+    {
+        $doctorUser = $this->userWithRole(RoleName::Doctor);
+        $doctor = Doctor::factory()->create(['user_id' => $doctorUser->id]);
+        $consultation = Consultation::factory()->create([
+            'doctor_id' => $doctor->id,
+            'status' => ConsultationStatus::Abierta,
+        ]);
+
+        $this->actingAs($doctorUser)
+            ->post(route('consultations.odontogram.store', $consultation), [
+                'tooth' => 55,
+                'condition' => 'hipoplasia',
+                'notes' => 'Hallazgo en pieza temporal.',
+            ])
+            ->assertRedirect();
+
+        $entry = OdontogramEntry::query()->firstOrFail();
+
+        $this->assertSame(55, $entry->tooth);
+        $this->assertSame('hipoplasia', $entry->condition);
+    }
+
     public function test_secretary_can_read_consultations_but_not_modify_them_or_see_the_odontogram(): void
     {
         $secretary = $this->userWithRole(RoleName::Secretaria);

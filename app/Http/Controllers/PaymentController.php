@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PaymentMethodType;
 use App\Enums\PaymentStatus;
 use App\Enums\PaymentType;
 use App\Http\Requests\Payments\StorePaymentRequest;
@@ -107,6 +108,10 @@ class PaymentController extends Controller
             'statuses' => array_map(
                 fn (PaymentStatus $case): array => ['value' => $case->value, 'label' => $case->label()],
                 PaymentStatus::cases(),
+            ),
+            'paymentMethodTypes' => array_map(
+                fn (PaymentMethodType $case): array => ['value' => $case->value, 'label' => $case->label()],
+                PaymentMethodType::cases(),
             ),
         ]);
     }

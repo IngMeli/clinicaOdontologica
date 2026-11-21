@@ -176,6 +176,7 @@ export type Prescription = {
 export type OdontogramConditionOption = {
     value: string;
     label: string;
+    code: string;
 };
 
 export type ConsultationFormData = {
@@ -504,6 +505,7 @@ export type PharmacySaleFormData = {
 
 export type PaymentFormData = {
     patient_id: string;
+    payment_method_type: string;
     type: string;
     amount: string;
     status: string;

@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\OdontogramEntry;
 use App\Models\Patient;
 use App\Models\User;
+use App\Support\Teeth;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +18,7 @@ class OdontogramEntryFactory extends Factory
         return [
             'patient_id' => Patient::factory(),
             'consultation_id' => null,
-            'tooth' => fake()->numberBetween(11, 48),
+            'tooth' => fake()->randomElement(Teeth::all()),
             'surface' => fake()->randomElement(['oclusal', 'mesial', 'distal', 'vestibular', 'lingual', null]),
             'condition' => fake()->randomElement(['sano', 'caries', 'obturado', 'corona', 'extraido']),
             'notes' => fake()->optional()->sentence(),

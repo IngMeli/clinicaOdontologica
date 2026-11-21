@@ -375,7 +375,7 @@ export default function ConsultationShow({
                                                 id="tooth"
                                                 type="number"
                                                 min={11}
-                                                max={48}
+                                                max={85}
                                                 value={form.data.tooth}
                                                 onChange={(event) => {
                                                     form.setData(
@@ -392,6 +392,10 @@ export default function ConsultationShow({
                                                     form.errors.tooth,
                                                 )}
                                             />
+                                            <p className="text-[10px] text-muted-foreground">
+                                                Permanente 11-48 · Temporal
+                                                51-85
+                                            </p>
                                         </div>
                                         <div className="space-y-1">
                                             <Label htmlFor="surface">
@@ -445,6 +449,7 @@ export default function ConsultationShow({
                                                         key={condition.value}
                                                         value={condition.value}
                                                     >
+                                                        {condition.code} ·{' '}
                                                         {condition.label}
                                                     </option>
                                                 ))}

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { toDateInput, toDateTimeLocal } from '@/lib/format';
+import { toDateTimeLocal } from '@/lib/format';
 import { index, store, update } from '@/routes/appointments';
 import type {
     AppointmentFormData,
@@ -38,6 +38,29 @@ function FieldError({ message }: { message?: string }) {
     return <p className="text-xs text-destructive">{message}</p>;
 }
 
+function defaultScheduledAt(date?: string): string {
+    const now = new Date();
+
+    if (date) {
+        const selected = new Date(`${date}T09:00:00`);
+
+        if (!Number.isNaN(selected.getTime())) {
+            if (
+                selected >= now ||
+                selected.toDateString() !== now.toDateString()
+            ) {
+                return toDateTimeLocal(selected.toISOString());
+            }
+        }
+    }
+
+    const next = new Date(now);
+    next.setSeconds(0, 0);
+    next.setMinutes(Math.ceil((next.getMinutes() + 1) / 30) * 30);
+
+    return toDateTimeLocal(next.toISOString());
+}
+
 export function AppointmentForm({
     patients,
     doctors,
@@ -46,7 +69,7 @@ export function AppointmentForm({
 }: Props) {
     const initialDateTime = appointment
         ? toDateTimeLocal(appointment.scheduled_at)
-        : `${defaults?.date ?? toDateInput(new Date().toISOString())}T09:00`;
+        : defaultScheduledAt(defaults?.date);
 
     const form = useForm<AppointmentFormData>({
         patient_id: String(

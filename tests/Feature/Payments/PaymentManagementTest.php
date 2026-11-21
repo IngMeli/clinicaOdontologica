@@ -76,6 +76,47 @@ class PaymentManagementTest extends TestCase
                 ->where('canManage', false));
     }
 
+    public function test_qr_payment_generates_a_scannable_payload_and_stays_pending(): void
+    {
+        $secretary = $this->userWithRole(RoleName::Secretaria);
+        $patient = Patient::factory()->create();
+
+        $response = $this->actingAs($secretary)
+            ->post(route('payments.store'), [
+                'patient_id' => $patient->id,
+                'payment_method_type' => 'qr',
+                'type' => 'consulta',
+                'amount' => 180,
+                'status' => 'pendiente',
+            ]);
+
+        $response->assertSessionHasNoErrors()->assertRedirect();
+
+        $payment = Payment::query()->firstOrFail();
+
+        $this->assertSame('pendiente', $payment->status->value);
+        $this->assertSame('qr_simple', $payment->gateway);
+        $this->assertSame('QR-'.$payment->reference, $payment->gateway_reference);
+        $this->assertNotNull($payment->payment_method_id);
+        $this->assertNotNull($payment->qr_payload);
+        $this->assertDatabaseMissing('receipts', ['payment_id' => $payment->id]);
+
+        $payload = json_decode((string) $payment->qr_payload, true);
+
+        $this->assertIsArray($payload);
+        $this->assertSame($payment->reference, $payload['reference']);
+        $this->assertSame(180, $payload['amount']);
+        $this->assertSame($patient->id, $payload['patient_id']);
+
+        $this->actingAs($secretary)
+            ->get(route('payments.show', $payment))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('payments/show')
+                ->where('payment.qr_payload', $payment->qr_payload)
+                ->where('payment.method.type', 'qr'));
+    }
+
     public function test_manager_can_change_payment_status_and_void_the_receipt(): void
     {
         $manager = $this->userWithRole(RoleName::Encargado);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Payments;
 
+use App\Enums\PaymentMethodType;
 use App\Enums\PaymentStatus;
 use App\Enums\PaymentType;
 use App\Models\User;
@@ -26,6 +27,7 @@ class StorePaymentRequest extends FormRequest
         return [
             'patient_id' => ['nullable', 'integer', 'exists:patients,id'],
             'payment_method_id' => ['nullable', 'integer', 'exists:payment_methods,id'],
+            'payment_method_type' => ['nullable', Rule::enum(PaymentMethodType::class)],
             'type' => ['required', Rule::enum(PaymentType::class)],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'currency' => ['nullable', 'string', 'size:3'],

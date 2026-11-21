@@ -101,7 +101,7 @@ class PrescriptionManagementTest extends TestCase
                 ->has('prescription.items', 2));
     }
 
-    public function test_admin_can_issue_a_prescription(): void
+    public function test_admin_cannot_issue_prescriptions(): void
     {
         $admin = $this->userWithRole(RoleName::Administrador);
         $doctor = Doctor::factory()->create(['active' => true]);
@@ -112,13 +112,37 @@ class PrescriptionManagementTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('prescriptions/index')
-                ->where('can.create', true));
+                ->where('can.create', false));
 
         $this->actingAs($admin)
             ->get(route('prescriptions.create'))
-            ->assertOk();
+            ->assertForbidden();
 
         $this->actingAs($admin)
+            ->post(route('prescriptions.store'), [
+                'patient_id' => $patient->id,
+                'doctor_id' => $doctor->id,
+                'issued_at' => now()->format('Y-m-d H:i:s'),
+                'items' => [
+                    ['medication' => 'Paracetamol', 'quantity' => 1],
+                ],
+            ])
+            ->assertForbidden();
+
+        $this->assertSame(0, Prescription::query()->count());
+    }
+
+    public function test_manager_can_issue_prescriptions(): void
+    {
+        $manager = $this->userWithRole(RoleName::Encargado);
+        $doctor = Doctor::factory()->create(['active' => true]);
+        $patient = Patient::factory()->create();
+
+        $this->actingAs($manager)
+            ->get(route('prescriptions.create'))
+            ->assertOk();
+
+        $this->actingAs($manager)
             ->post(route('prescriptions.store'), [
                 'patient_id' => $patient->id,
                 'doctor_id' => $doctor->id,

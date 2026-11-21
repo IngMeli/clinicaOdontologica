@@ -87,6 +87,8 @@ export type PortalPayment = {
     status: string;
     type: string;
     paid_at: string | null;
+    gateway?: string | null;
+    qr_payload?: string | null;
     method?: { name: string; type: string; last4: string | null } | null;
     receipt?: { number: string; issued_at: string } | null;
 };

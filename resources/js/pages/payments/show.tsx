@@ -3,11 +3,13 @@ import {
     ArrowLeft,
     CreditCard,
     Loader2,
+    QrCode,
     ReceiptText,
     Save,
     User,
 } from 'lucide-react';
 import type { FormEvent } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { EntitySelect } from '@/components/entity-select';
 import { PageHeader } from '@/components/page-header';
 import { StatusBadge } from '@/components/status-badge';
@@ -143,6 +145,41 @@ export default function PaymentShow({ payment, canManage, statuses }: Props) {
                     </div>
 
                     <div className="space-y-4">
+                        {payment.qr_payload && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <QrCode className="size-4" />
+                                        Pago QR
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3 text-sm">
+                                    <div className="flex justify-center rounded-lg bg-white p-4">
+                                        <QRCodeSVG
+                                            value={payment.qr_payload}
+                                            size={192}
+                                            level="M"
+                                        />
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="font-mono text-xs">
+                                            {payment.gateway_reference ??
+                                                payment.reference ??
+                                                `#${payment.id}`}
+                                        </p>
+                                        <p className="text-xl font-semibold">
+                                            {formatAmount(payment.amount)}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {payment.status === 'pendiente'
+                                                ? 'Pendiente de confirmación'
+                                                : 'Pago QR registrado'}
+                                        </p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">

@@ -9,12 +9,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property PaymentMethodType $type
+ */
 class PaymentMethod extends Model
 {
     /** @use HasFactory<PaymentMethodFactory> */
     use HasFactory;
 
     protected $guarded = ['id'];
+
+    protected $appends = ['name'];
 
     protected function casts(): array
     {
@@ -23,6 +28,11 @@ class PaymentMethod extends Model
             'is_default' => 'boolean',
             'expires_at' => 'date',
         ];
+    }
+
+    public function getNameAttribute(): string
+    {
+        return $this->alias ?? $this->provider ?? $this->type->label();
     }
 
     /**

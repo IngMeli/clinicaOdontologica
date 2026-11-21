@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Prescriptions;
 
-use App\Models\Prescription;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -11,7 +10,7 @@ class StorePrescriptionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('create', Prescription::class) ?? false;
+        return $this->user()?->canIssuePrescriptions() ?? false;
     }
 
     /**

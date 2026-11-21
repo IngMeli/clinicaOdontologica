@@ -72,15 +72,15 @@ class PrescriptionController extends Controller
             ],
             'isDoctor' => $user->hasRole('doctor'),
             'can' => [
-                'create' => Gate::allows('create', Prescription::class),
+                'create' => $user->canIssuePrescriptions(),
             ],
         ]);
     }
 
     public function create(Request $request): Response
     {
-        Gate::authorize('create', Prescription::class);
         $user = $this->currentUser($request);
+        abort_unless($user->canIssuePrescriptions(), 403);
 
         return Inertia::render('prescriptions/create', [
             'patients' => Patient::query()
@@ -104,6 +104,7 @@ class PrescriptionController extends Controller
     public function store(StorePrescriptionRequest $request): RedirectResponse
     {
         $user = $this->currentUser($request);
+        abort_unless($user->canIssuePrescriptions(), 403);
         $data = $request->validated();
         $items = $data['items'];
         unset($data['items']);

@@ -1,5 +1,6 @@
 import { Head } from '@inertiajs/react';
-import { CreditCard, Wallet } from 'lucide-react';
+import { CreditCard, QrCode, Wallet } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { Badge } from '@/components/ui/badge';
 import {
     Card,
@@ -26,6 +27,10 @@ export default function PortalPayments({
     paymentPlans,
     payments,
 }: Props) {
+    const pendingQrPayments = payments.filter(
+        (payment) => payment.qr_payload && payment.status === 'pendiente',
+    );
+
     return (
         <>
             <Head title="Mis pagos" />
@@ -119,6 +124,42 @@ export default function PortalPayments({
                         </Card>
                     ))}
                 </div>
+
+                {pendingQrPayments.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <QrCode className="size-4" />
+                                Pagos QR pendientes
+                            </CardTitle>
+                            <CardDescription>
+                                Escanea el código para completar el pago.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            {pendingQrPayments.map((payment) => (
+                                <div
+                                    key={payment.id}
+                                    className="space-y-2 rounded-lg border p-3 text-center"
+                                >
+                                    <div className="flex justify-center rounded-md bg-white p-3">
+                                        <QRCodeSVG
+                                            value={payment.qr_payload ?? ''}
+                                            size={144}
+                                            level="M"
+                                        />
+                                    </div>
+                                    <p className="font-mono text-xs">
+                                        {payment.reference ?? `#${payment.id}`}
+                                    </p>
+                                    <p className="font-semibold">
+                                        {formatAmount(payment.amount)}
+                                    </p>
+                                </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+                )}
 
                 <Card>
                     <CardHeader>
