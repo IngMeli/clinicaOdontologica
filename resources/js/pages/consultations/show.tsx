@@ -53,6 +53,8 @@ type Props = {
         manage_odontogram: boolean;
         create_treatment_plan: boolean;
         create_prescription: boolean;
+        view_treatment_plans: boolean;
+        view_prescriptions: boolean;
     };
 };
 
@@ -553,6 +555,7 @@ export default function ConsultationShow({
                 )}
 
                 <div className="grid gap-4 xl:grid-cols-2">
+                    {can.view_treatment_plans && (
                     <Card>
                         <CardHeader>
                             <div className="flex items-center justify-between gap-2">
@@ -607,7 +610,9 @@ export default function ConsultationShow({
                             )}
                         </CardContent>
                     </Card>
+                    )}
 
+                    {can.view_prescriptions && (
                     <Card>
                         <CardHeader>
                             <div className="flex items-center justify-between gap-2">
@@ -663,6 +668,7 @@ export default function ConsultationShow({
                             )}
                         </CardContent>
                     </Card>
+                    )}
                 </div>
 
                 <div className="flex justify-start">

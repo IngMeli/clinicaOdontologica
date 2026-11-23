@@ -44,6 +44,8 @@ final class Permissions
 
     public const TREATMENT_PLANS_VIEW = 'treatment_plans.view';
 
+    public const TREATMENT_PLANS_CREATE = 'treatment_plans.create';
+
     public const TREATMENT_PLANS_MANAGE = 'treatment_plans.manage';
 
     public const PRESCRIPTIONS_VIEW = 'prescriptions.view';
@@ -63,6 +65,12 @@ final class Permissions
     public const PAYMENT_METHODS_VIEW = 'payment_methods.view';
 
     public const PAYMENT_METHODS_MANAGE = 'payment_methods.manage';
+
+    public const PHARMACY_VIEW = 'pharmacy.view';
+
+    public const PHARMACY_CREATE = 'pharmacy.create';
+
+    public const PHARMACY_MANAGE = 'pharmacy.manage';
 
     public const REPORTS_VIEW = 'reports.view';
 
@@ -106,11 +114,12 @@ final class Permissions
             self::CONSULTATIONS_VIEW, self::CONSULTATIONS_CREATE, self::CONSULTATIONS_UPDATE,
             self::ODONTOGRAM_VIEW, self::ODONTOGRAM_MANAGE,
             self::TREATMENTS_VIEW, self::TREATMENTS_CREATE, self::TREATMENTS_UPDATE, self::TREATMENTS_DELETE,
-            self::TREATMENT_PLANS_VIEW, self::TREATMENT_PLANS_MANAGE,
+            self::TREATMENT_PLANS_VIEW, self::TREATMENT_PLANS_CREATE, self::TREATMENT_PLANS_MANAGE,
             self::PRESCRIPTIONS_VIEW, self::PRESCRIPTIONS_CREATE,
             self::INVENTORY_VIEW, self::INVENTORY_MANAGE,
             self::PAYMENTS_VIEW, self::PAYMENTS_CREATE, self::PAYMENTS_MANAGE,
             self::PAYMENT_METHODS_VIEW, self::PAYMENT_METHODS_MANAGE,
+            self::PHARMACY_VIEW, self::PHARMACY_CREATE, self::PHARMACY_MANAGE,
             self::REPORTS_VIEW, self::AUDIT_VIEW,
             self::USERS_VIEW, self::USERS_MANAGE, self::ROLES_VIEW, self::ROLES_MANAGE,
             self::MENU_MANAGE, self::SPECIALTIES_VIEW, self::SPECIALTIES_MANAGE, self::SETTINGS_MANAGE,
@@ -127,8 +136,22 @@ final class Permissions
         return match ($role) {
             RoleName::Administrador => array_values(array_diff(self::all(), [
                 self::PRESCRIPTIONS_CREATE,
+                self::TREATMENT_PLANS_CREATE,
+                self::TREATMENTS_CREATE,
+                self::PHARMACY_CREATE,
             ])),
-            RoleName::Encargado => self::all(),
+            RoleName::Encargado => array_values(array_diff(self::all(), [
+                self::ROLES_VIEW,
+                self::ROLES_MANAGE,
+                self::PRESCRIPTIONS_VIEW,
+                self::PRESCRIPTIONS_CREATE,
+                self::TREATMENT_PLANS_VIEW,
+                self::TREATMENT_PLANS_CREATE,
+                self::TREATMENT_PLANS_MANAGE,
+                self::PHARMACY_VIEW,
+                self::PHARMACY_CREATE,
+                self::PHARMACY_MANAGE,
+            ])),
             RoleName::Doctor => [
                 self::DASHBOARD_VIEW,
                 self::PATIENTS_VIEW, self::PATIENTS_UPDATE,
@@ -136,7 +159,7 @@ final class Permissions
                 self::CONSULTATIONS_VIEW, self::CONSULTATIONS_CREATE, self::CONSULTATIONS_UPDATE,
                 self::ODONTOGRAM_VIEW, self::ODONTOGRAM_MANAGE,
                 self::TREATMENTS_VIEW,
-                self::TREATMENT_PLANS_VIEW, self::TREATMENT_PLANS_MANAGE,
+                self::TREATMENT_PLANS_VIEW, self::TREATMENT_PLANS_CREATE, self::TREATMENT_PLANS_MANAGE,
                 self::PRESCRIPTIONS_VIEW, self::PRESCRIPTIONS_CREATE,
                 self::REPORTS_VIEW,
                 self::SPECIALTIES_VIEW,
@@ -152,6 +175,7 @@ final class Permissions
                 self::INVENTORY_VIEW,
                 self::PAYMENTS_VIEW, self::PAYMENTS_CREATE,
                 self::PAYMENT_METHODS_VIEW, self::PAYMENT_METHODS_MANAGE,
+                self::PHARMACY_VIEW, self::PHARMACY_CREATE,
                 self::REPORTS_VIEW,
                 self::SPECIALTIES_VIEW,
             ],

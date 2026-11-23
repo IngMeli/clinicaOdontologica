@@ -8,7 +8,6 @@ use App\Http\Requests\Patients\StorePatientRequest;
 use App\Http\Requests\Patients\UpdatePatientRequest;
 use App\Models\Appointment;
 use App\Models\Patient;
-use App\Models\TreatmentPlan;
 use App\Services\AuditLogger;
 use App\Services\DocumentNumberService;
 use App\Services\OdontogramService;
@@ -105,7 +104,10 @@ class PatientController extends Controller
 
         $tab = $request->string('tab')->toString();
 
-        $patient->load([
+        $canViewTreatmentPlans = $request->user()?->can(Permissions::TREATMENT_PLANS_VIEW) ?? false;
+        $canViewPrescriptions = $request->user()?->can(Permissions::PRESCRIPTIONS_VIEW) ?? false;
+
+        $relations = [
             'appointments' => fn ($query) => $query
                 ->with(['doctor.user', 'doctor.specialty'])
                 ->orderByDesc('scheduled_at')
@@ -113,16 +115,6 @@ class PatientController extends Controller
             'consultations' => fn ($query) => $query
                 ->with('doctor.user')
                 ->orderByDesc('consulted_at')
-                ->limit(20),
-            'treatmentPlans' => fn ($query) => $query
-                ->with('doctor.user')
-                ->withCount('items')
-                ->orderByDesc('created_at')
-                ->limit(20),
-            'prescriptions' => fn ($query) => $query
-                ->with('doctor.user')
-                ->withCount('items')
-                ->orderByDesc('issued_at')
                 ->limit(20),
             'payments' => fn ($query) => $query
                 ->with(['method', 'receipt'])
@@ -132,7 +124,25 @@ class PatientController extends Controller
                 ->withCount('installments')
                 ->orderByDesc('created_at')
                 ->limit(10),
-        ]);
+        ];
+
+        if ($canViewTreatmentPlans) {
+            $relations['treatmentPlans'] = fn ($query) => $query
+                ->with('doctor.user')
+                ->withCount('items')
+                ->orderByDesc('created_at')
+                ->limit(20);
+        }
+
+        if ($canViewPrescriptions) {
+            $relations['prescriptions'] = fn ($query) => $query
+                ->with('doctor.user')
+                ->withCount('items')
+                ->orderByDesc('issued_at')
+                ->limit(20);
+        }
+
+        $patient->load($relations);
 
         $paidTotal = (float) $patient->payments()
             ->where('status', PaymentStatus::Pagado->value)
@@ -147,7 +157,15 @@ class PatientController extends Controller
             ->count();
 
         $canViewOdontogram = $request->user()?->can(Permissions::ODONTOGRAM_VIEW) ?? false;
-        $allowedTabs = ['citas', 'consultas', 'planes', 'recetas', 'pagos'];
+        $allowedTabs = ['citas', 'consultas', 'pagos'];
+
+        if ($canViewTreatmentPlans) {
+            $allowedTabs[] = 'planes';
+        }
+
+        if ($canViewPrescriptions) {
+            $allowedTabs[] = 'recetas';
+        }
 
         if ($canViewOdontogram) {
             $allowedTabs[] = 'odontograma';
@@ -169,8 +187,10 @@ class PatientController extends Controller
                 'deactivate' => Gate::allows('deactivate', $patient),
                 'create_appointment' => Gate::allows('create', Appointment::class),
                 'view_odontogram' => $canViewOdontogram,
-                'create_treatment_plan' => Gate::allows('create', TreatmentPlan::class),
+                'create_treatment_plan' => $request->user()?->canCreateTreatmentPlans() ?? false,
                 'create_prescription' => $request->user()?->canIssuePrescriptions() ?? false,
+                'view_treatment_plans' => $canViewTreatmentPlans,
+                'view_prescriptions' => $canViewPrescriptions,
             ],
         ]);
     }

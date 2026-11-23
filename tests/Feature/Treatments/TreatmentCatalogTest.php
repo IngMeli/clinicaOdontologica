@@ -104,6 +104,64 @@ class TreatmentCatalogTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_secretary_can_view_the_catalog_but_cannot_manage_it(): void
+    {
+        $secretary = $this->userWithRole(RoleName::Secretaria);
+        $treatment = Treatment::factory()->create(['active' => true]);
+
+        $this->actingAs($secretary)
+            ->get(route('treatments.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('treatments/index')
+                ->has('treatments.data', 1)
+                ->where('can.create', false)
+                ->where('can.update', false));
+
+        $this->actingAs($secretary)
+            ->get(route('treatments.create'))
+            ->assertForbidden();
+
+        $this->actingAs($secretary)
+            ->get(route('treatments.edit', $treatment))
+            ->assertForbidden();
+
+        $this->actingAs($secretary)
+            ->patch(route('treatments.status', $treatment), ['active' => false])
+            ->assertForbidden();
+
+        $this->assertTrue($treatment->fresh()->active);
+    }
+
+    public function test_admin_can_view_but_not_create_treatments(): void
+    {
+        $admin = $this->userWithRole(RoleName::Administrador);
+
+        $this->actingAs($admin)
+            ->get(route('treatments.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('treatments/index')
+                ->where('can.create', false)
+                ->where('can.update', true));
+
+        $this->actingAs($admin)
+            ->get(route('treatments.create'))
+            ->assertForbidden();
+
+        $this->actingAs($admin)
+            ->post(route('treatments.store'), [
+                'name' => 'Intento de administrador',
+                'price' => 100,
+                'duration_minutes' => 30,
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseMissing('treatments', [
+            'name' => 'Intento de administrador',
+        ]);
+    }
+
     private function userWithRole(RoleName $role): User
     {
         $user = User::factory()->create(['active' => true]);

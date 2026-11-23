@@ -10,12 +10,12 @@ class PharmacySalePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->can(Permissions::PAYMENTS_VIEW);
+        return $user->can(Permissions::PHARMACY_VIEW);
     }
 
     public function view(User $user, PharmacySale $sale): bool
     {
-        if ($user->can(Permissions::PAYMENTS_VIEW)) {
+        if ($user->can(Permissions::PHARMACY_VIEW)) {
             return true;
         }
 
@@ -24,11 +24,11 @@ class PharmacySalePolicy
 
     public function create(User $user): bool
     {
-        return $user->can(Permissions::PAYMENTS_CREATE);
+        return $user->can(Permissions::PHARMACY_CREATE);
     }
 
     public function cancel(User $user, PharmacySale $sale): bool
     {
-        return $user->can(Permissions::PAYMENTS_MANAGE);
+        return $user->can(Permissions::PHARMACY_MANAGE);
     }
 }

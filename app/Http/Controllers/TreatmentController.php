@@ -7,6 +7,7 @@ use App\Http\Requests\Treatments\UpdateTreatmentRequest;
 use App\Models\Treatment;
 use App\Services\AuditLogger;
 use App\Services\DocumentNumberService;
+use App\Support\Permissions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -56,12 +57,16 @@ class TreatmentController extends Controller
                 'active' => $active,
                 'category' => $category,
             ],
+            'can' => [
+                'create' => $request->user()?->canCreateTreatments() ?? false,
+                'update' => Gate::allows(Permissions::TREATMENTS_UPDATE),
+            ],
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
-        Gate::authorize('create', Treatment::class);
+        abort_unless($request->user()?->canCreateTreatments(), 403);
 
         return Inertia::render('treatments/create', [
             'categories' => Treatment::query()

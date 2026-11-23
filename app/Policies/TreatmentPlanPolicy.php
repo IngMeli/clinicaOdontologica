@@ -20,7 +20,7 @@ class TreatmentPlanPolicy
 
     public function create(User $user): bool
     {
-        return $user->can(Permissions::TREATMENT_PLANS_MANAGE);
+        return $user->can(Permissions::TREATMENT_PLANS_CREATE);
     }
 
     public function update(User $user, TreatmentPlan $plan): bool

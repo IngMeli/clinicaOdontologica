@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Pharmacy;
 
 use App\Models\User;
-use App\Support\Permissions;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StorePharmacySaleRequest extends FormRequest
@@ -12,7 +11,7 @@ class StorePharmacySaleRequest extends FormRequest
     {
         $user = $this->user();
 
-        return $user instanceof User && $user->can(Permissions::PAYMENTS_CREATE);
+        return $user instanceof User && $user->canSellPharmacy();
     }
 
     /**

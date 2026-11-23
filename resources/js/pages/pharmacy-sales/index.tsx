@@ -27,6 +27,9 @@ import type { Paginated, PharmacySale } from '@/types';
 type Props = {
     sales: Paginated<PharmacySale>;
     filters: { search: string; status: string };
+    can: {
+        create: boolean;
+    };
     metrics: {
         today_count: number;
         today_total: number;
@@ -40,7 +43,12 @@ const statusOptions = [
     { value: 'anulada', label: 'Anulada' },
 ];
 
-export default function PharmacySalesIndex({ sales, filters, metrics }: Props) {
+export default function PharmacySalesIndex({
+    sales,
+    filters,
+    can,
+    metrics,
+}: Props) {
     return (
         <>
             <Head title="Ventas de farmacia" />
@@ -50,12 +58,14 @@ export default function PharmacySalesIndex({ sales, filters, metrics }: Props) {
                     title="Ventas de farmacia"
                     description="Dispensación de productos, cobros y comprobantes."
                     actions={
-                        <Button asChild>
-                            <Link href="/ventas-farmacia/crear">
-                                <Plus className="size-4" />
-                                Nueva venta
-                            </Link>
-                        </Button>
+                        can.create ? (
+                            <Button asChild>
+                                <Link href="/ventas-farmacia/crear">
+                                    <Plus className="size-4" />
+                                    Nueva venta
+                                </Link>
+                            </Button>
+                        ) : undefined
                     }
                 />
 

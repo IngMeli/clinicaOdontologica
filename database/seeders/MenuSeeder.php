@@ -40,7 +40,7 @@ class MenuSeeder extends Seeder
                 'children' => [
                     ['label' => 'Inventario', 'icon' => 'boxes', 'route_name' => 'inventory.index', 'permission_name' => Permissions::INVENTORY_VIEW],
                     ['label' => 'Pagos', 'icon' => 'credit-card', 'route_name' => 'payments.index', 'permission_name' => Permissions::PAYMENTS_VIEW],
-                    ['label' => 'Ventas de farmacia', 'icon' => 'shopping-cart', 'route_name' => 'pharmacy-sales.index', 'permission_name' => Permissions::PAYMENTS_VIEW],
+                    ['label' => 'Ventas de farmacia', 'icon' => 'shopping-cart', 'route_name' => 'pharmacy-sales.index', 'permission_name' => Permissions::PHARMACY_VIEW],
                 ],
             ],
             [

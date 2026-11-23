@@ -82,7 +82,7 @@ class PharmacySaleManagementTest extends TestCase
                 ->where('sale.id', $sale->id)
                 ->where('canCancel', false));
 
-        $this->actingAs($this->userWithRole(RoleName::Encargado))
+        $this->actingAs($this->userWithRole(RoleName::Administrador))
             ->patch(route('pharmacy-sales.cancel', $sale))
             ->assertRedirect();
 
@@ -109,6 +109,56 @@ class PharmacySaleManagementTest extends TestCase
 
         $this->assertSame(1, $product->fresh()->stock);
         $this->assertSame(0, PharmacySale::query()->count());
+    }
+
+    public function test_admin_can_view_but_not_sell_in_pharmacy(): void
+    {
+        $admin = $this->userWithRole(RoleName::Administrador);
+        $product = Product::factory()->create([
+            'stock' => 10,
+            'sale_price' => 20,
+            'active' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('pharmacy-sales.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('pharmacy-sales/index')
+                ->where('can.create', false));
+
+        $this->actingAs($admin)
+            ->get(route('pharmacy-sales.create'))
+            ->assertForbidden();
+
+        $this->actingAs($admin)
+            ->post(route('pharmacy-sales.store'), [
+                'items' => [
+                    ['product_id' => $product->id, 'quantity' => 1],
+                ],
+            ])
+            ->assertForbidden();
+
+        $this->assertSame(0, PharmacySale::query()->count());
+        $this->assertSame(10, $product->fresh()->stock);
+    }
+
+    public function test_manager_cannot_access_pharmacy_sales(): void
+    {
+        $manager = $this->userWithRole(RoleName::Encargado);
+        $sale = PharmacySale::factory()->create();
+
+        $this->actingAs($manager)
+            ->get(route('pharmacy-sales.index'))
+            ->assertForbidden();
+
+        $this->actingAs($manager)
+            ->get(route('pharmacy-sales.create'))
+            ->assertForbidden();
+
+        $this->actingAs($manager)
+            ->patch(route('pharmacy-sales.cancel', $sale))
+            ->assertForbidden();
     }
 
     public function test_doctor_cannot_access_pharmacy_sales(): void

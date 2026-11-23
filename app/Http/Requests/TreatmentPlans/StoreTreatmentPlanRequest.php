@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\TreatmentPlans;
 
-use App\Models\TreatmentPlan;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -11,7 +10,7 @@ class StoreTreatmentPlanRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('create', TreatmentPlan::class) ?? false;
+        return $this->user()?->canCreateTreatmentPlans() ?? false;
     }
 
     /**

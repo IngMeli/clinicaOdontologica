@@ -124,4 +124,22 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         return ! $this->hasRole(RoleName::Administrador->value)
             && $this->can(Permissions::PRESCRIPTIONS_CREATE);
     }
+
+    public function canCreateTreatmentPlans(): bool
+    {
+        return ! $this->hasRole(RoleName::Administrador->value)
+            && $this->can(Permissions::TREATMENT_PLANS_CREATE);
+    }
+
+    public function canCreateTreatments(): bool
+    {
+        return ! $this->hasRole(RoleName::Administrador->value)
+            && $this->can(Permissions::TREATMENTS_CREATE);
+    }
+
+    public function canSellPharmacy(): bool
+    {
+        return ! $this->hasRole(RoleName::Administrador->value)
+            && $this->can(Permissions::PHARMACY_CREATE);
+    }
 }

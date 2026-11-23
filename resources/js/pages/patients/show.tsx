@@ -56,6 +56,8 @@ type Props = {
         view_odontogram: boolean;
         create_treatment_plan: boolean;
         create_prescription: boolean;
+        view_treatment_plans: boolean;
+        view_prescriptions: boolean;
     };
 };
 
@@ -90,9 +92,21 @@ export default function PatientShow({
     >(null);
     const [processing, setProcessing] = useState(false);
 
-    const tabs = baseTabs.filter(
-        (item) => item.key !== 'odontograma' || can.view_odontogram,
-    );
+    const tabs = baseTabs.filter((item) => {
+        if (item.key === 'odontograma') {
+            return can.view_odontogram;
+        }
+
+        if (item.key === 'planes') {
+            return can.view_treatment_plans;
+        }
+
+        if (item.key === 'recetas') {
+            return can.view_prescriptions;
+        }
+
+        return true;
+    });
 
     const age = calculateAge(patient.birth_date);
 

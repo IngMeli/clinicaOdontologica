@@ -84,15 +84,16 @@ class TreatmentPlanController extends Controller
             ],
             'isDoctor' => $user->hasRole('doctor'),
             'can' => [
-                'create' => Gate::allows('create', TreatmentPlan::class),
+                'create' => $user->canCreateTreatmentPlans(),
             ],
         ]);
     }
 
     public function create(Request $request): Response
     {
-        Gate::authorize('create', TreatmentPlan::class);
         $user = $this->currentUser($request);
+
+        abort_unless($user->canCreateTreatmentPlans(), 403);
 
         return Inertia::render('treatment-plans/create', [
             ...$this->formOptions(),

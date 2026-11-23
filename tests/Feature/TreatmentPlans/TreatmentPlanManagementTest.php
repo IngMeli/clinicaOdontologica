@@ -174,27 +174,27 @@ class TreatmentPlanManagementTest extends TestCase
             ->assertSessionHasErrors('status');
     }
 
-    public function test_admin_can_create_a_treatment_plan_from_the_panel(): void
+    public function test_admin_can_view_but_not_create_treatment_plans(): void
     {
         $admin = $this->userWithRole(RoleName::Administrador);
         $doctor = Doctor::factory()->create(['active' => true]);
         $patient = Patient::factory()->create();
+        $plan = TreatmentPlan::factory()->create();
 
         $this->actingAs($admin)
             ->get(route('treatment-plans.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('treatment-plans/index')
-                ->where('can.create', true));
+                ->where('can.create', false));
+
+        $this->actingAs($admin)
+            ->get(route('treatment-plans.show', $plan))
+            ->assertOk();
 
         $this->actingAs($admin)
             ->get(route('treatment-plans.create'))
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('treatment-plans/create')
-                ->where('isDoctor', false)
-                ->has('doctors', 1)
-                ->has('patients', 1));
+            ->assertForbidden();
 
         $this->actingAs($admin)
             ->post(route('treatment-plans.store'), [
@@ -203,12 +203,11 @@ class TreatmentPlanManagementTest extends TestCase
                 'start_date' => now()->toDateString(),
                 'notes' => 'Plan creado por administración.',
             ])
-            ->assertRedirect();
+            ->assertForbidden();
 
-        $this->assertDatabaseHas('treatment_plans', [
+        $this->assertDatabaseMissing('treatment_plans', [
             'patient_id' => $patient->id,
             'doctor_id' => $doctor->id,
-            'created_by' => $admin->id,
         ]);
     }
 
@@ -300,6 +299,24 @@ class TreatmentPlanManagementTest extends TestCase
             ->patch(route('treatment-plans.status', $otherPlan), [
                 'status' => TreatmentPlanStatus::Aprobado->value,
             ])
+            ->assertForbidden();
+    }
+
+    public function test_manager_cannot_access_treatment_plans(): void
+    {
+        $manager = $this->userWithRole(RoleName::Encargado);
+        $plan = TreatmentPlan::factory()->create();
+
+        $this->actingAs($manager)
+            ->get(route('treatment-plans.index'))
+            ->assertForbidden();
+
+        $this->actingAs($manager)
+            ->get(route('treatment-plans.create'))
+            ->assertForbidden();
+
+        $this->actingAs($manager)
+            ->get(route('treatment-plans.show', $plan))
             ->assertForbidden();
     }
 

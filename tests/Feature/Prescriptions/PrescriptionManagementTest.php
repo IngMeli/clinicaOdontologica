@@ -132,15 +132,19 @@ class PrescriptionManagementTest extends TestCase
         $this->assertSame(0, Prescription::query()->count());
     }
 
-    public function test_manager_can_issue_prescriptions(): void
+    public function test_manager_cannot_view_or_issue_prescriptions(): void
     {
         $manager = $this->userWithRole(RoleName::Encargado);
         $doctor = Doctor::factory()->create(['active' => true]);
         $patient = Patient::factory()->create();
 
         $this->actingAs($manager)
+            ->get(route('prescriptions.index'))
+            ->assertForbidden();
+
+        $this->actingAs($manager)
             ->get(route('prescriptions.create'))
-            ->assertOk();
+            ->assertForbidden();
 
         $this->actingAs($manager)
             ->post(route('prescriptions.store'), [
@@ -151,12 +155,9 @@ class PrescriptionManagementTest extends TestCase
                     ['medication' => 'Paracetamol', 'quantity' => 1],
                 ],
             ])
-            ->assertRedirect();
+            ->assertForbidden();
 
-        $this->assertDatabaseHas('prescriptions', [
-            'patient_id' => $patient->id,
-            'doctor_id' => $doctor->id,
-        ]);
+        $this->assertSame(0, Prescription::query()->count());
     }
 
     public function test_secretary_can_read_but_not_issue_prescriptions(): void

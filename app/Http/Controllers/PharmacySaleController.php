@@ -53,6 +53,9 @@ class PharmacySaleController extends Controller
                 'search' => $search,
                 'status' => $status,
             ],
+            'can' => [
+                'create' => $request->user()?->canSellPharmacy() ?? false,
+            ],
             'metrics' => [
                 'today_count' => PharmacySale::query()
                     ->whereDate('sold_at', today())
@@ -74,9 +77,9 @@ class PharmacySaleController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
-        Gate::authorize('create', PharmacySale::class);
+        abort_unless($request->user()?->canSellPharmacy(), 403);
 
         return Inertia::render('pharmacy-sales/create', [
             'patients' => Patient::query()

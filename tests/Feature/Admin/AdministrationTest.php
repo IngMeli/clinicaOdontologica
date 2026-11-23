@@ -76,6 +76,22 @@ class AdministrationTest extends TestCase
                 ->where('canManage', true));
     }
 
+    public function test_manager_cannot_manage_roles_and_permissions(): void
+    {
+        $manager = $this->userWithRole(RoleName::Encargado);
+        $role = Role::findByName(RoleName::Doctor->value);
+
+        $this->actingAs($manager)
+            ->get(route('admin.roles.index'))
+            ->assertForbidden();
+
+        $this->actingAs($manager)
+            ->put(route('admin.roles.update', $role), ['permissions' => []])
+            ->assertForbidden();
+
+        $this->assertGreaterThan(0, $role->fresh()->permissions()->count());
+    }
+
     public function test_admin_role_cannot_be_modified(): void
     {
         $admin = $this->userWithRole(RoleName::Administrador);

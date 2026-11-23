@@ -109,10 +109,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->middleware('permission:'.Permissions::TREATMENT_PLANS_VIEW)
             ->name('index');
         Route::get('crear', [TreatmentPlanController::class, 'create'])
-            ->middleware('permission:'.Permissions::TREATMENT_PLANS_MANAGE)
+            ->middleware('permission:'.Permissions::TREATMENT_PLANS_CREATE)
             ->name('create');
         Route::post('/', [TreatmentPlanController::class, 'store'])
-            ->middleware('permission:'.Permissions::TREATMENT_PLANS_MANAGE)
+            ->middleware('permission:'.Permissions::TREATMENT_PLANS_CREATE)
             ->name('store');
         Route::get('{plan}', [TreatmentPlanController::class, 'show'])
             ->middleware('permission:'.Permissions::TREATMENT_PLANS_VIEW)
@@ -274,22 +274,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('ventas-farmacia')->name('pharmacy-sales.')->group(function () {
         Route::get('/', [PharmacySaleController::class, 'index'])
-            ->middleware('permission:'.Permissions::PAYMENTS_VIEW)
+            ->middleware('permission:'.Permissions::PHARMACY_VIEW)
             ->name('index');
         Route::get('crear', [PharmacySaleController::class, 'create'])
-            ->middleware('permission:'.Permissions::PAYMENTS_CREATE)
+            ->middleware('permission:'.Permissions::PHARMACY_CREATE)
             ->name('create');
         Route::post('/', [PharmacySaleController::class, 'store'])
-            ->middleware('permission:'.Permissions::PAYMENTS_CREATE)
+            ->middleware('permission:'.Permissions::PHARMACY_CREATE)
             ->name('store');
         Route::get('{sale}', [PharmacySaleController::class, 'show'])
-            ->middleware('permission:'.Permissions::PAYMENTS_VIEW)
+            ->middleware('permission:'.Permissions::PHARMACY_VIEW)
             ->name('show');
         Route::get('{sale}/imprimir', [PharmacySaleController::class, 'print'])
-            ->middleware('permission:'.Permissions::PAYMENTS_VIEW)
+            ->middleware('permission:'.Permissions::PHARMACY_VIEW)
             ->name('print');
         Route::patch('{sale}/anular', [PharmacySaleController::class, 'cancel'])
-            ->middleware('permission:'.Permissions::PAYMENTS_MANAGE)
+            ->middleware('permission:'.Permissions::PHARMACY_MANAGE)
             ->name('cancel');
     });
 

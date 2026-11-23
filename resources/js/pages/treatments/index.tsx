@@ -21,6 +21,10 @@ type Props = {
         active: string;
         category: string;
     };
+    can: {
+        create: boolean;
+        update: boolean;
+    };
 };
 
 const activeOptions = [
@@ -32,6 +36,7 @@ export default function TreatmentsIndex({
     treatments,
     categories,
     filters,
+    can,
 }: Props) {
     return (
         <>
@@ -43,12 +48,14 @@ export default function TreatmentsIndex({
                     title="Tratamientos"
                     description="Procedimientos, precios y duración estimada para los planes clínicos."
                     actions={
-                        <Button asChild>
-                            <Link href={create().url}>
-                                <Plus className="size-4" />
-                                Nuevo tratamiento
-                            </Link>
-                        </Button>
+                        can.create ? (
+                            <Button asChild>
+                                <Link href={create().url}>
+                                    <Plus className="size-4" />
+                                    Nuevo tratamiento
+                                </Link>
+                            </Button>
+                        ) : undefined
                     }
                 />
 
@@ -171,57 +178,64 @@ export default function TreatmentsIndex({
                                         />
                                     ),
                                 },
-                                {
-                                    key: 'actions',
-                                    header: '',
-                                    headerClassName: 'text-right',
-                                    className: 'text-right',
-                                    cell: (treatment) => (
-                                        <div className="flex justify-end gap-1">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                aria-label={
-                                                    treatment.active
-                                                        ? 'Desactivar tratamiento'
-                                                        : 'Activar tratamiento'
-                                                }
-                                                onClick={() =>
-                                                    router.patch(
-                                                        status(treatment.id)
-                                                            .url,
-                                                        {
-                                                            active: !treatment.active,
-                                                        },
-                                                        {
-                                                            preserveScroll: true,
-                                                        },
-                                                    )
-                                                }
-                                            >
-                                                {treatment.active ? (
-                                                    <ToggleRight className="size-4 text-emerald-600" />
-                                                ) : (
-                                                    <ToggleLeft className="size-4 text-muted-foreground" />
-                                                )}
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                asChild
-                                            >
-                                                <Link
-                                                    href={
-                                                        edit(treatment.id).url
-                                                    }
-                                                    aria-label="Editar tratamiento"
-                                                >
-                                                    <Pencil className="size-4" />
-                                                </Link>
-                                            </Button>
-                                        </div>
-                                    ),
-                                },
+                                ...(can.update
+                                    ? [
+                                          {
+                                              key: 'actions',
+                                              header: '',
+                                              headerClassName: 'text-right',
+                                              className: 'text-right',
+                                              cell: (treatment: Treatment) => (
+                                                  <div className="flex justify-end gap-1">
+                                                      <Button
+                                                          variant="ghost"
+                                                          size="icon"
+                                                          aria-label={
+                                                              treatment.active
+                                                                  ? 'Desactivar tratamiento'
+                                                                  : 'Activar tratamiento'
+                                                          }
+                                                          onClick={() =>
+                                                              router.patch(
+                                                                  status(
+                                                                      treatment.id,
+                                                                  ).url,
+                                                                  {
+                                                                      active: !treatment.active,
+                                                                  },
+                                                                  {
+                                                                      preserveScroll: true,
+                                                                  },
+                                                              )
+                                                          }
+                                                      >
+                                                          {treatment.active ? (
+                                                              <ToggleRight className="size-4 text-emerald-600" />
+                                                          ) : (
+                                                              <ToggleLeft className="size-4 text-muted-foreground" />
+                                                          )}
+                                                      </Button>
+                                                      <Button
+                                                          variant="ghost"
+                                                          size="icon"
+                                                          asChild
+                                                      >
+                                                          <Link
+                                                              href={
+                                                                  edit(
+                                                                      treatment.id,
+                                                                  ).url
+                                                              }
+                                                              aria-label="Editar tratamiento"
+                                                          >
+                                                              <Pencil className="size-4" />
+                                                          </Link>
+                                                      </Button>
+                                                  </div>
+                                              ),
+                                          },
+                                      ]
+                                    : []),
                             ]}
                             footer={
                                 <Pagination

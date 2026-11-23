@@ -9,7 +9,6 @@ use App\Http\Requests\Odontogram\StoreOdontogramEntryRequest;
 use App\Models\Consultation;
 use App\Models\Doctor;
 use App\Models\OdontogramEntry;
-use App\Models\TreatmentPlan;
 use App\Models\User;
 use App\Services\AuditLogger;
 use App\Services\OdontogramService;
@@ -109,20 +108,27 @@ class ConsultationController extends Controller
             'appointment',
         ]);
 
-        $treatmentPlans = $consultation->treatmentPlans()
-            ->with(['doctor.user'])
-            ->withCount('items')
-            ->latest()
-            ->get();
+        $canViewOdontogram = Gate::allows(Permissions::ODONTOGRAM_VIEW);
+        $canViewTreatmentPlans = Gate::allows(Permissions::TREATMENT_PLANS_VIEW);
+        $canViewPrescriptions = Gate::allows(Permissions::PRESCRIPTIONS_VIEW);
 
-        $prescriptions = $consultation->prescriptions()
-            ->with(['doctor.user'])
-            ->withCount('items')
-            ->latest('issued_at')
-            ->get();
+        $treatmentPlans = $canViewTreatmentPlans
+            ? $consultation->treatmentPlans()
+                ->with(['doctor.user'])
+                ->withCount('items')
+                ->latest()
+                ->get()
+            : collect();
+
+        $prescriptions = $canViewPrescriptions
+            ? $consultation->prescriptions()
+                ->with(['doctor.user'])
+                ->withCount('items')
+                ->latest('issued_at')
+                ->get()
+            : collect();
 
         $isOpen = $consultation->isOpen();
-        $canViewOdontogram = Gate::allows(Permissions::ODONTOGRAM_VIEW);
 
         return Inertia::render('consultations/show', [
             'consultation' => $consultation,
@@ -150,8 +156,10 @@ class ConsultationController extends Controller
                     && $canViewOdontogram
                     && Gate::allows(Permissions::ODONTOGRAM_MANAGE)
                     && Gate::allows('update', $consultation),
-                'create_treatment_plan' => Gate::allows('create', TreatmentPlan::class),
+                'create_treatment_plan' => $request->user()?->canCreateTreatmentPlans() ?? false,
                 'create_prescription' => $request->user()?->canIssuePrescriptions() ?? false,
+                'view_treatment_plans' => $canViewTreatmentPlans,
+                'view_prescriptions' => $canViewPrescriptions,
             ],
         ]);
     }
